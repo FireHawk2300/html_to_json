@@ -20,53 +20,57 @@ public class Html_to_json {
 
     public static void main(String[] args) throws IOException {
         
-        //JSOUP lib connects to URL and gets HTML        
-        String html = Jsoup.connect("https://github.com/egis/handbook/blob/master/Cultural-Manifesto.md").get().html();
-        
+        //JSOUP connects to URL and gets HTML        
+        String html = Jsoup.connect("https://github.com/egis/handbook/blob/master/Tech-Stack.md").get().html();
+                
         //Parse retrieved html to JSOUP for interpretation
         Document doc = Jsoup.parse(html);
         
-        //Interrogates <table> tag in html
-        Element table = doc.select("table").first();
+        //Interrogates <div id="readme"> tag in html and gets its <h2> tags
+        Element divID = doc.getElementById("readme");
+        Elements h2Tags = divID.getElementsByTag("h2");
         
-        //Interrogates <tbody> tag in html
-        Element tBody = doc.select("tbody").first();
-        
-        //Gets all table headers <th> from <table>
-        Elements tHead = table.getElementsByTag("th");
-        
-        //Gets all rows <tr> from <tbody>
-        Elements row = tBody.getElementsByTag("tr");
-        
-        //Loop through each header, so that it prints each row on a new line
-        for (int i = 0, l = tHead.size(); i < l; i++) {            
-            //re-initialise for each object (header) - so we have unique (rows)
-            JSONObject jsonParentObject = new JSONObject();
+        //Loops through each heading <h2>                
+        for (int a = 0, b = h2Tags.size(); a < b; a++) {
+            int headNum = a+1;
+            Elements heading = h2Tags.eq(a).select("h2");
+            JSONObject jsonHeadObject = new JSONObject();
+            jsonHeadObject.put("Heading:"+headNum, heading.text());
+            //System.out.println("*****"+heading.text()+"*****");
+            System.out.println(jsonHeadObject.toString());
             
-            for (int j = 0, k = row.size(); j < k; j++) {                
-                //re-initialise contents for each row
-                JSONObject jsonObject = new JSONObject();                
+            //Interrogates <tbody> tag in html for every <h2> tag and gets its <tr> rows
+            Element tBody = doc.select("tbody").get(a);
+            Elements row = tBody.getElementsByTag("tr");
                 
-                //cloumn contents retrieved for each row
+            //Loops through each row
+            for (int i = 0, l = row.size(); i < l; i++) {
+                //re-initialise for each object (row)                   
+                JSONObject jsonObject = new JSONObject();
+                
+                //Interrogates <table> tag in html for every <h2> tag and gets heading <th> for each column
+                Element table = doc.select("table").get(a);
+                Elements tHead = table.getElementsByTag("th");                    
                 Elements cols = row.eq(i).select("td");
-                String capability = cols.get(0).text();
-                String junior = cols.get(1).text();
-                String dev = cols.get(2).text();
-                String senior = cols.get(3).text();
-                String fullStack = cols.get(4).text();
-                String teamLead = cols.get(5).text();
-                String architect = cols.get(6).text();        
-                jsonObject.put("Junior", junior);
-                jsonObject.put("Dev", dev);
-                jsonObject.put("Senior", senior);
-                jsonObject.put("Full Stack", fullStack);
-                jsonObject.put("Team Lead", teamLead);
-                jsonObject.put("Architect", architect);
-                jsonParentObject.put(capability,jsonObject);
-             }
+                    
+                //Loops though each heading for each row
+                for (int j = 0, k = tHead.size(); j <k; j++) {
+                    Elements th = tHead.eq(j).select("th");
+                    String colCont = cols.get(j).text();
+                    jsonObject.put(th.text(), colCont);
+                }                
+                //Displays each row on a new line
+                System.out.println(jsonObject.toString());                    
+            }
+            //End of each <h2> tag
+            if (headNum < h2Tags.size()) {                
+                System.out.println();
+                System.out.println();
+            }
             
-            System.out.println(jsonParentObject.toString());
         }
+        
     }
+        
     
 }
