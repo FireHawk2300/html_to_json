@@ -31,7 +31,6 @@ public class Html_to_json {
             Elements heading = h2Tags.eq(a).select("h2");
             JSONObject jsonHeadObject = new JSONObject();
             jsonHeadObject.put("Heading:"+headNum, heading.text());
-            //System.out.println("*****"+heading.text()+"*****");
             System.out.println(jsonHeadObject.toString());
             
             //Interrogates <tbody> tag in html for every <h2> tag and gets its <tr> rows
